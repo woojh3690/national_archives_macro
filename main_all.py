@@ -8,7 +8,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from get_list_data import *
 from search_list import *
 
-import re
 import csv
 
 BASE_URL = "https://www.archives.go.kr/"

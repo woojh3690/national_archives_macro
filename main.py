@@ -7,7 +7,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from get_list_data import *
 
-import re
 import csv
 
 BASE_URL = "https://www.archives.go.kr/"
@@ -82,7 +81,7 @@ if __name__ == '__main__':
     while (True):
         searchWd = input("검색어를 입력해 주세요: ")
         driver.get(BASE_URL)
-        
+
         for type, xpath in dicSearchOpts.items():
             # 검색
             driver.find_element(By.XPATH, '//*[@id="label_modal_2"]').click()
