@@ -77,13 +77,7 @@ def getListData(type, page, startIdx = 0, endIdx = 5):
     else:
         return parse_default(driver, page, startIdx, endIdx)
 
-if __name__ == '__main__':   
-    """
-        \"단어\"  단어1
-        \"단 어\" 단어2
-        단|어     단-어
-        단*어     단0어
-    """
+if __name__ == '__main__':
     driver = init_driver()
     wait = WebDriverWait(driver, 30)
 
