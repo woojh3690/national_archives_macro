@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from get_list_data import *
 
+import re
 import csv
 
 BASE_URL = "https://www.archives.go.kr/"
@@ -20,10 +21,10 @@ BASE_URL = "https://www.archives.go.kr/"
 dicSearchOpts = {
     "기본검색": '//*[@id="defaultOpen-original1"]',
     "공공누리": '//*[@id="defaultOpen-original2"]',
-    "토지기록물": '//*[@id="defaultOpen-original3"]',
-    "국무회의록": '//*[@id="defaultOpen-original5"]',
-    "정부간행물": '//*[@id="defaultOpen-original6"]',
-    "일제강점기 기록물": '//*[@id="defaultOpen-original10"]',
+    #"토지기록물": '//*[@id="defaultOpen-original3"]',
+    #"국무회의록": '//*[@id="defaultOpen-original5"]',
+    #"정부간행물": '//*[@id="defaultOpen-original6"]',
+    #"일제강점기 기록물": '//*[@id="defaultOpen-original10"]',
 }
 
 dicSearchBox = {
@@ -59,7 +60,7 @@ def waitForSearch():
     wait.until(EC.invisibility_of_element((By.XPATH, '//*[@id="main"]/div[1]')))
 
 def writeCsv(type, searchWd, items):
-    with open(type + '_' + searchWd + '.csv', 'w', encoding='utf-8-sig', newline='') as f:
+    with open(type + '.csv', 'w', encoding='utf-8-sig', newline='') as f:
         rdr = csv.writer(f, delimiter=',')
         for item in items:
             rdr.writerow(item)
@@ -103,9 +104,11 @@ if __name__ == '__main__':
             items = items + getListData(type, 0, 0, 5)
             print("---------------- 마지막 페이지 --------------------")
             # 마지막 페이지
-            driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a[7]').click()
             page = int(maxIdx / 10)
             remain = maxIdx % 10
+            last = page if (remain == 0) else page + 1
+                    
+            driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a['+str(last)+']').click()
             if (remain >= 5):
                 items = items + getListData(type, page, remain - 5, remain)
             else:
