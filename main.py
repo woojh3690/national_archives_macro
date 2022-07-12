@@ -77,7 +77,6 @@ def getListData(type, page, startIdx = 0, endIdx = 5):
 
 if __name__ == '__main__':
     searchWd = input("검색어를 입력해 주세요: ")
-    # searchWd = '사무'
 
     driver = init_driver()
     driver.get(BASE_URL)
