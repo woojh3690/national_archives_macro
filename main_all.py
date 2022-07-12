@@ -11,6 +11,7 @@ from search_list import *
 import csv
 
 BASE_URL = "https://www.archives.go.kr/"
+RESULT_DIR = "./result/{}_{}.csv"
 
 # 관보, 피해자명부, 독립운동, 건축도면 판결문 안함
 # "관보": '//*[@id="defaultOpen-original4"]',
@@ -60,7 +61,7 @@ def waitForSearch():
     wait.until(EC.invisibility_of_element((By.XPATH, '//*[@id="main"]/div[1]')))
 
 def writeCsv(type, searchWd, items):
-    with open(type + '_' + searchWd + '.csv', 'w', encoding='utf-8-sig', newline='') as f:
+    with open(RESULT_DIR.format(type, searchWd), 'w', encoding='utf-8-sig', newline='') as f:
         rdr = csv.writer(f, delimiter=',')
         for item in items:
             rdr.writerow(item)
@@ -111,11 +112,14 @@ if __name__ == '__main__':
                 print("---------------- 마지막 페이지 --------------------")
 
                 # 마지막 페이지
-                driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a[last()]').click()
                 page = int(maxIdx / 10)
                 remain = maxIdx % 10
-                if (remain >= 5 or remain == 0):
+                driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a[last()]').click()
+
+                if (remain >= 5):
                     items = items + getListData(type, page, remain - 5, remain)
+                elif (remain == 0):
+                    items = items + getListData(type, page, 5, 10)
                 else:
                     lastItems = getListData(type, page, 0, remain)
                     driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a[2]').click()
