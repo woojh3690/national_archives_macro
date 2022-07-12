@@ -13,12 +13,6 @@ import csv
 BASE_URL = "https://www.archives.go.kr/"
 RESULT_DIR = "./result/{}_{}.csv"
 
-# 관보, 피해자명부, 독립운동, 건축도면 판결문 안함
-# "관보": '//*[@id="defaultOpen-original4"]',
-# "독립운동 판결문": '//*[@id="defaultOpen-original7"]',
-# "일제강점기 피해자명부": '//*[@id="defaultOpen-original8"]',
-# "일제강점기 건축도면": '//*[@id="defaultOpen-original9"]',
-
 dicSearchOpts = {
     "기본검색": '//*[@id="defaultOpen-original1"]',
     "공공누리": '//*[@id="defaultOpen-original2"]',
@@ -56,18 +50,14 @@ def init_driver():
     driver.implicitly_wait(10)
     return driver
 
-
-def waitForSearch():
-    wait.until(EC.invisibility_of_element((By.XPATH, '//*[@id="main"]/div[1]')))
-
-def writeCsv(type, searchWd, items):
-    with open(RESULT_DIR.format(type, searchWd), 'w', encoding='utf-8-sig', newline='') as f:
+def writeCsv(type, searchWd, fileName, items):
+    with open(RESULT_DIR.format(type, fileName), 'w', encoding='utf-8-sig', newline='') as f:
         rdr = csv.writer(f, delimiter=',')
         for item in items:
             rdr.writerow(item)
 
 def getListData(type, page, startIdx = 0, endIdx = 5):
-    waitForSearch()
+    wait.until(EC.invisibility_of_element((By.XPATH, '//*[@id="main"]/div[1]')))
     if (type=='관보'):
         return parse_gazette(driver, page, startIdx, endIdx)
     elif (type == '국무회의록'):
@@ -124,4 +114,4 @@ if __name__ == '__main__':
             else:
                 print("검색 결과 없음")
 
-            writeCsv(type, fileName, items)
+            writeCsv(type, searchWd, fileName, items)
