@@ -106,10 +106,9 @@ if __name__ == '__main__':
             # 마지막 페이지
             page = int(maxIdx / 10)
             remain = maxIdx % 10
-            last = page if (remain == 0) else page + 1
                     
-            driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a['+str(last)+']').click()
-            if (remain >= 5):
+            driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a[last()]').click()
+            if (remain >= 5 or remain == 0):
                 items = items + getListData(type, page, remain - 5, remain)
             else:
                 lastItems = getListData(type, page, 0, remain)
