@@ -78,12 +78,11 @@ def getListData(type, page, startIdx = 0, endIdx = 5):
 
 if __name__ == '__main__':
     driver = init_driver()
+    wait = WebDriverWait(driver, 30)
     while (True):
         searchWd = input("검색어를 입력해 주세요: ")
-
         driver.get(BASE_URL)
-        wait = WebDriverWait(driver, 30)
-
+        
         for type, xpath in dicSearchOpts.items():
             # 검색
             driver.find_element(By.XPATH, '//*[@id="label_modal_2"]').click()
