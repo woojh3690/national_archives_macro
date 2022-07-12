@@ -43,7 +43,7 @@ dicSearchBox = {
 def init_driver():
     options = Options()
     options.add_argument('--incognito')
-    # options.add_argument('--headless')
+    options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920x1080')
@@ -77,47 +77,48 @@ def getListData(type, page, startIdx = 0, endIdx = 5):
         return parse_default(driver, page, startIdx, endIdx)
 
 if __name__ == '__main__':
-    searchWd = input("검색어를 입력해 주세요: ")
-
     driver = init_driver()
-    driver.get(BASE_URL)
-    wait = WebDriverWait(driver, 30)
+    while (True):
+        searchWd = input("검색어를 입력해 주세요: ")
 
-    for type, xpath in dicSearchOpts.items():
-        # 검색
-        driver.find_element(By.XPATH, '//*[@id="label_modal_2"]').click()
-        driver.find_element(By.XPATH, xpath).click()
-        keyWordBox = driver.find_element(By.XPATH, dicSearchBox[type])
-        keyWordBox.click()
-        keyWordBox.send_keys(searchWd)
-        keyWordBox.send_keys(Keys.ENTER)
+        driver.get(BASE_URL)
+        wait = WebDriverWait(driver, 30)
 
-        elementMaxIdx = driver.find_element(By.XPATH, '//*[@id="depth1"]/div/a')
+        for type, xpath in dicSearchOpts.items():
+            # 검색
+            driver.find_element(By.XPATH, '//*[@id="label_modal_2"]').click()
+            driver.find_element(By.XPATH, xpath).click()
+            keyWordBox = driver.find_element(By.XPATH, dicSearchBox[type])
+            keyWordBox.click()
+            keyWordBox.send_keys(searchWd)
+            keyWordBox.send_keys(Keys.ENTER)
 
-        # 전체 조회 건수 가져오기
-        maxIdx = int(elementMaxIdx.text.replace(',','')[4:-1])
-        print(type + " 조회 건수: ", maxIdx)
+            elementMaxIdx = driver.find_element(By.XPATH, '//*[@id="depth1"]/div/a')
 
-        items = []
-        if (maxIdx > 10):
-            # 첫 페이지
-            items = items + getListData(type, 0, 0, 5)
-            print("---------------- 마지막 페이지 --------------------")
-            # 마지막 페이지
-            page = int(maxIdx / 10)
-            remain = maxIdx % 10
-                    
-            driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a[last()]').click()
-            if (remain >= 5 or remain == 0):
-                items = items + getListData(type, page, remain - 5, remain)
+            # 전체 조회 건수 가져오기
+            maxIdx = int(elementMaxIdx.text.replace(',','')[4:-1])
+            print(type + " 조회 건수: ", maxIdx)
+
+            items = []
+            if (maxIdx > 10):
+                # 첫 페이지
+                items = items + getListData(type, 0, 0, 5)
+                print("---------------- 마지막 페이지 --------------------")
+                # 마지막 페이지
+                page = int(maxIdx / 10)
+                remain = maxIdx % 10
+                        
+                driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a[last()]').click()
+                if (remain >= 5 or remain == 0):
+                    items = items + getListData(type, page, remain - 5, remain)
+                else:
+                    lastItems = getListData(type, page, 0, remain)
+                    driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a[2]').click()
+                    items = items + getListData(type, page - 1, 5 + remain, 10)
+                    items = items + lastItems
+            elif (maxIdx > 0):
+                items = items + getListData(type, 0, 0, maxIdx)
             else:
-                lastItems = getListData(type, page, 0, remain)
-                driver.find_element(By.XPATH, '//*[@id="subright"]/form/ul[2]/div/div/ul/a[2]').click()
-                items = items + getListData(type, page - 1, 5 + remain, 10)
-                items = items + lastItems
-        elif (maxIdx > 0):
-            items = items + getListData(type, 0, 0, maxIdx)
-        else:
-            print("검색 결과 없음")
+                print("검색 결과 없음")
 
-        writeCsv(type, searchWd, items)
+            writeCsv(type, searchWd, items)
