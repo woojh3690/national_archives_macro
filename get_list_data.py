@@ -110,7 +110,11 @@ def parse_proceedings(driver, page, startIdx = 0, endIdx = 5):
         title = driver.find_element(By.XPATH, listTitleXPath.format(idx)).text
     
         driver.find_element(By.XPATH, listBtnXpath.format(idx)).click()
-        mngNo = driver.find_element(By.XPATH, listMngNoXPath.format(idx - 1)).text
+        try:
+            mngNo = driver.find_element(By.XPATH, listMngNoXPath.format(idx - 1)).text
+        except Exception as e:
+            continue
+        
         gunTitle = driver.find_element(By.XPATH, listSubTitleXPath.format(idx - 1)).text
         ironTitle = driver.find_element(By.XPATH, listSubTitle2XPath.format(idx - 1)).text
 
