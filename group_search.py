@@ -7,10 +7,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from group_search_list import *
 
-import time
 import csv
 
 BASE_URL = "https://www.archives.go.kr/"
+RESULT_DIR = "./result/{}_{}.csv"
 
 def init_driver():
     options = Options()
@@ -27,8 +27,26 @@ def init_driver():
     driver.implicitly_wait(10)
     return driver
 
-#def getListData(driver):
+def getListData(tab, startIdx, endIdx):
+    form_xpath = '//*[@id="tab{}"]/div[2]/div[{}]/span[{}]'
 
+    items = []
+    for idx in range(startIdx + 1, endIdx + 1):
+        item = []
+        for colIdx in [2, 1, 3]:
+            cell_xpath = form_xpath.format(tab, idx + 1, colIdx)
+            text = driver.find_element(By.XPATH, cell_xpath).text
+            item.append(text)
+            print(text, end='  |  ')
+        print('')
+        items.append(item)
+    return items
+
+def writeCsv(type, fileName, items):
+    with open(RESULT_DIR.format(fileName, type), 'w', encoding='utf-8-sig', newline='') as f:
+        rdr = csv.writer(f, delimiter=',')
+        for item in items:
+            rdr.writerow(item)
 
 if __name__ == '__main__':
     driver = init_driver()
@@ -40,18 +58,40 @@ if __name__ == '__main__':
         keyWordBox.send_keys(keyword)
         keyWordBox.send_keys(Keys.ENTER)
 
-        for idx in [1, 2]:
-            elementMaxIdx = driver.find_element(By.XPATH, 
-                '//*[@id="defaultOpen{}"]'.format(idx)
-            ).click()
+        for tabId in [1, 2]:
+            btn_xpath = '//*[@id="defaultOpen{}"]'.format(tabId)
+            elementMaxIdx = driver.find_element(By.XPATH, btn_xpath)
 
-            elementMaxIdx = driver.find_element(By.XPATH, 
-                '//*[@id="defaultOpen{}"]'.format(idx)
-            )
-
-            # 전체 조회 건수 가져오기
+            # 조회 건수 가져오기
             s = elementMaxIdx.text
             s = s[s.find("(")+1:s.find(")")]
             maxIdx = int(s.replace(',',''))
             print("조회 건수:", maxIdx)
-            time.sleep(5)
+
+            elementMaxIdx.click()
+
+            items = []
+            if (maxIdx > 10):
+                # 첫 페이지
+                items = items + getListData(tabId, 0, 5)
+
+                # 마지막 페이지
+                page = int(maxIdx / 10)
+                remain = maxIdx % 10
+                btn_page = '//*[@id="tab{}"]/div[3]/ul/li/div/ul/a[{}]'
+                driver.find_element(By.XPATH, btn_page.format(tabId, 'last()')).click()
+                
+                if (remain >= 5):
+                    items = items + getListData(tabId, remain - 5, remain)
+                elif (remain == 0):
+                    items = items + getListData(tabId, 5, 10)
+                else:
+                    lastItems = getListData(tabId, 0, remain)
+                    driver.find_element(By.XPATH, btn_page.format(tabId, 2)).click()
+                    items = items + getListData(tabId, 5 + remain, 10)
+                    items = items + lastItems
+            elif (maxIdx > 0):
+                items = items + getListData(tabId, 0, maxIdx)
+            else:
+                print("검색 결과 없음")
+            writeCsv(tabId, keyword, items)
