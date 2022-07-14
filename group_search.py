@@ -10,7 +10,7 @@ from group_search_list import *
 import csv
 
 BASE_URL = "https://www.archives.go.kr/"
-RESULT_DIR = "./result/{}_{}.csv"
+RESULT_DIR = "./result/{}. {}.csv"
 
 def init_driver():
     options = Options()
@@ -42,8 +42,14 @@ def getListData(tab, startIdx, endIdx):
         items.append(item)
     return items
 
-def writeCsv(type, fileName, items):
-    with open(RESULT_DIR.format(fileName, type), 'w', encoding='utf-8-sig', newline='') as f:
+def countKeyWord(keyword, items):
+    cText = '{}({})'
+    for idx, item in enumerate(items):
+        count = item[2].count(keyword)
+        items[idx].insert(2, cText.format(keyword, count))
+
+def writeCsv(keyword_idx, keyword, items):
+    with open(RESULT_DIR.format(keyword_idx, keyword), 'w', encoding='utf-8-sig', newline='') as f:
         rdr = csv.writer(f, delimiter=',')
         for item in items:
             rdr.writerow(item)
@@ -52,12 +58,13 @@ if __name__ == '__main__':
     driver = init_driver()
     wait = WebDriverWait(driver, 30)
 
-    for keyword in search_list:
+    for keyword_idx, keyword in enumerate(search_list):
         driver.get(BASE_URL + 'next/search/viewDescClassMain.do')
         keyWordBox = driver.find_element(By.XPATH, '//*[@id="kindword"]')
         keyWordBox.send_keys(keyword)
         keyWordBox.send_keys(Keys.ENTER)
 
+        allItems = []
         for tabId in [1, 2]:
             btn_xpath = '//*[@id="defaultOpen{}"]'.format(tabId)
             elementMaxIdx = driver.find_element(By.XPATH, btn_xpath)
@@ -94,4 +101,6 @@ if __name__ == '__main__':
                 items = items + getListData(tabId, 0, maxIdx)
             else:
                 print("검색 결과 없음")
-            writeCsv(tabId, keyword, items)
+            countKeyWord(keyword, items)
+            allItems = allItems + items
+        writeCsv(keyword_idx, keyword, allItems)
